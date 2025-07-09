@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>💣 Minesweeper Mobile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 10px;
+    }
+
+    h1 {
+      margin: 10px 0;
+      font-size: 22px;
+    }
+
+    #spiel {
+      display: grid;
+      grid-template-columns: repeat(8, 40px);
+      gap: 4px;
+      justify-content: center;
+      margin: 10px auto;
+    }
+
+    .feld {
+      width: 40px;
+      height: 40px;
+      background: #444;
+      color: white;
+      font-size: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 6px;
+      user-select: none;
+    }
+
+    .feld.aufgedeckt {
+      background: #999;
+    }
+
+    .feld.bombe {
+      background: crimson;
+    }
+
+    .reset {
+      margin-top: 12px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #555;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .reset:hover {
+      background: #777;
+    }
+
+    .hinweis {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>💣 Minesweeper</h1>
+  <div id="spiel"></div>
+  <button class="reset" onclick="starteSpiel()">🔁 Neustart</button>
+  <div class="hinweis">🧤 Tipp: Tippen = Aufdecken, Lange tippen = Flagge</div>
+
+  <script>
+    const breite = 8;
+    const höhe = 12;
+    const bombenAnzahl = 10;
+    let felder = [];
+
+    function starteSpiel() {
+      const container = document.getElementById("spiel");
+      container.innerHTML = "";
+      felder = [];
+
+      for (let i = 0; i < breite * höhe; i++) {
+        const feld = document.createElement("div");
+        feld.classList.add("feld");
+        feld.dataset.index = i;
+
+        let timer;
+        let gedrückt = false;
+
+        feld.addEventListener("touchstart", e => {
+          gedrückt = false;
+          timer = setTimeout(() => {
+            gedrückt = true;
+            markiereFeld(i);
+          }, 500);
+        });
+
+        feld.addEventListener("touchend", e => {
+          clearTimeout(timer);
+          if (!gedrückt) klickeFeld(i);
+        });
+
+        container.appendChild(feld);
+        felder.push({ element: feld, bombe: false, angrenzende: 0, aufgedeckt: false, markiert: false });
+      }
+
+      // Bomben platzieren
+      let platzierte = 0;
+      while (platzierte < bombenAnzahl) {
+        const index = Math.floor(Math.random() * felder.length);
+        if (!felder[index].bombe) {
+          felder[index].bombe = true;
+          platzierte++;
+        }
+      }
+
+      // Zahlen berechnen
+      for (let i = 0; i < felder.length; i++) {
+        const nachbarn = getNachbarn(i);
+        felder[i].angrenzende = nachbarn.filter(n => felder[n].bombe).length;
+      }
+    }
+
+    function getNachbarn(index) {
+      const x = index % breite;
+      const y = Math.floor(index / breite);
+      const nachbarn = [];
+
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          if (dx === 0 && dy === 0) continue;
+          const nx = x + dx;
+          const ny = y + dy;
+          if (nx >= 0 && nx < breite && ny >= 0 && ny < höhe) {
+            nachbarn.push(ny * breite + nx);
+          }
+        }
+      }
+
+      return nachbarn;
+    }
+
+    function klickeFeld(index) {
+      const feld = felder[index];
+      if (feld.aufgedeckt || feld.markiert) return;
+
+      feld.aufgedeckt = true;
+      feld.element.classList.add("aufgedeckt");
+
+      if (feld.bombe) {
+        feld.element.textContent = "💣";
+        feld.element.classList.add("bombe");
+        alert("💥 Game Over!");
+        zeigeAlleBomben();
+        return;
+      }
+
+      if (feld.angrenzende > 0) {
+        feld.element.textContent = feld.angrenzende;
+      } else {
+        getNachbarn(index).forEach(klickeFeld);
+      }
+    }
+
+    function markiereFeld(index) {
+      const feld = felder[index];
+      if (feld.aufgedeckt) return;
+      feld.markiert = !feld.markiert;
+      feld.element.textContent = feld.markiert ? "🚩" : "";
+    }
+
+    function zeigeAlleBomben() {
+      felder.forEach(feld => {
+        if (feld.bombe) {
+          feld.element.textContent = "💣";
+          feld.element.classList.add("bombe");
+        }
+      });
+    }
+
+    starteSpiel();
+  </script>
+</body>
+</html>
