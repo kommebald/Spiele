@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weiterleitung...</title>
+  <script>
+    // Funktion prüft, ob es sich um ein Mobilgerät handelt
+    function isMobile() {
+      return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    }
+
+    // Weiterleitung je nach Gerätetyp
+    window.onload = function () {
+      if (isMobile()) {
+        window.location.href = "login_mobile.html";
+      } else {
+        window.location.href = "login.html";
+      }
+    };
+  </script>
+</head>
+<body>
+  <p>Du wirst weitergeleitet...</p>
+</body>
+</html>
