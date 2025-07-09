@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Zahlenraten (Mobil)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #2c3e50, #34495e);
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    p {
+      font-size: 18px;
+      margin: 10px 0;
+    }
+
+    input[type="number"] {
+      padding: 14px;
+      font-size: 20px;
+      border-radius: 12px;
+      border: none;
+      width: 60%;
+      max-width: 200px;
+      margin: 15px 0;
+    }
+
+    button {
+      padding: 14px 24px;
+      font-size: 18px;
+      border-radius: 12px;
+      border: none;
+      background-color: #27ae60;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #219150;
+    }
+
+    #ergebnis, #versuche {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .back-button {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #888;
+      border-radius: 10px;
+    }
+
+    @media (max-width: 500px) {
+      input[type="number"], button {
+        width: 80%;
+      }
+
+      .back-button {
+        font-size: 14px;
+        padding: 10px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>🔢 Zahlenraten</h1>
+  <p>Ich habe eine Zahl zwischen <strong>1</strong> und <strong>100</strong> im Kopf.</p>
+
+  <input type="number" id="eingabe" min="1" max="100" placeholder="Deine Zahl">
+  <br>
+  <button onclick="rateZahl()" id="rateButton">Raten</button>
+
+  <p id="ergebnis"></p>
+  <p id="versuche"></p>
+
+  <button class="back-button" onclick="window.location.href='index.html'">⬅ Zurück</button>
+
+  <script>
+    let zufallszahl = Math.floor(Math.random() * 100) + 1;
+    let versuchAnzahl = 0;
+
+    function rateZahl() {
+      const eingabe = parseInt(document.getElementById("eingabe").value);
+      const ergebnis = document.getElementById("ergebnis");
+      const versuche = document.getElementById("versuche");
+      const rateButton = document.getElementById("rateButton");
+      versuchAnzahl++;
+
+      if (isNaN(eingabe) || eingabe < 1 || eingabe > 100) {
+        ergebnis.textContent = "❗ Zahl zwischen 1 und 100!";
+        return;
+      }
+
+      if (eingabe === zufallszahl) {
+        ergebnis.textContent = `🎉 Richtig! Die Zahl war ${zufallszahl}.`;
+        versuche.textContent = `Du hast ${versuchAnzahl} Versuch(e) gebraucht.`;
+        rateButton.textContent = "🔁 Nochmal";
+        rateButton.onclick = () => location.reload();
+      } else if (eingabe < zufallszahl) {
+        ergebnis.textContent = "🔼 Zu niedrig!";
+      } else {
+        ergebnis.textContent = "🔽 Zu hoch!";
+      }
+    }
+  </script>
+</body>
+</html>
