@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Klick den Punkt (Mobil)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      background-color: #1e272e;
+      color: white;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 10px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    #spielfeld {
+      position: relative;
+      width: 90vw;
+      height: 60vh;
+      margin: 20px auto;
+      background-color: #2f3640;
+      border: 2px solid #fff;
+      border-radius: 10px;
+    }
+
+    .punkt {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background-color: red;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    #info {
+      margin-top: 10px;
+      font-size: 16px;
+    }
+
+    .back-button {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      padding: 8px 16px;
+      background-color: #888;
+      color: white;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎯 Klick den Punkt</h1>
+  <p>Tippe den roten Punkt an, sobald er erscheint!</p>
+
+  <div id="spielfeld"></div>
+  <p id="info">Tippe irgendwo zum Start</p>
+
+  <button class="back-button" onclick="window.location.href='index.html'">⬅</button>
+
+  <script>
+    const spielfeld = document.getElementById("spielfeld");
+    const info = document.getElementById("info");
+    let startZeit;
+
+    function neuerPunkt() {
+      const punkt = document.createElement("div");
+      punkt.className = "punkt";
+      const x = Math.random() * (spielfeld.clientWidth - 40);
+      const y = Math.random() * (spielfeld.clientHeight - 40);
+      punkt.style.left = `${x}px`;
+      punkt.style.top = `${y}px`;
+
+      punkt.onclick = () => {
+        const zeit = ((new Date()) - startZeit) / 1000;
+        info.textContent = `⏱️ Reaktion: ${zeit.toFixed(2)} s`;
+        punkt.remove();
+        setTimeout(starteSpiel, 1000 + Math.random() * 2000);
+      };
+
+      spielfeld.appendChild(punkt);
+      startZeit = new Date();
+    }
+
+    function starteSpiel() {
+      info.textContent = "⏳ Warte...";
+      setTimeout(neuerPunkt, 1000 + Math.random() * 2000);
+    }
+
+    document.body.addEventListener("click", () => {
+      info.textContent = "Los geht's!";
+      setTimeout(starteSpiel, 1000);
+    }, { once: true });
+  </script>
+</body>
+</html>
