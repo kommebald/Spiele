@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Webseite (Mobile)</title>
+  <style>
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #000000;
+      --footer-color: #f0f0f0;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #121212;
+      --text-color: #ffffff;
+      --footer-color: #1e1e1e;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .header {
+      display: flex;
+      justify-content: flex-end;
+      padding: 0.75rem 1rem;
+      position: sticky;
+      top: 0;
+      background-color: var(--bg-color);
+      z-index: 1000;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: 1px solid var(--text-color);
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      color: var(--text-color);
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      font-size: 1.4rem;
+      text-align: center;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      background-color: var(--footer-color);
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+  </div>
+
+  <div class="content">
+    Willkommen auf der mobilen Webseite!
+  </div>
+
+  <div class="footer">
+    <div>Made by kommebald</div>
+    <div id="userInfo">Lädt...</div>
+  </div>
+
+  <script>
+    // Login-Prüfung
+    const user = localStorage.getItem("loggedInUser");
+    if (!user) {
+      window.location.href = "index.html";
+    }
+
+    // Theme laden
+    const currentTheme = localStorage.getItem("theme") || "light";
+    document.documentElement.setAttribute("data-theme", currentTheme);
+
+    function toggleTheme() {
+      const newTheme = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", newTheme);
+      localStorage.setItem("theme", newTheme);
+    }
+
+    // Benutzername + Uhrzeit
+    const userInfo = document.getElementById("userInfo");
+
+    function updateClock() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString();
+      userInfo.textContent = `Eingeloggt als ${user} – ${timeString}`;
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>
