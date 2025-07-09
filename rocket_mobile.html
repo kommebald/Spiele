@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🚀 Raketenlandung Mobile</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      overflow: hidden;
+      text-align: center;
+      color: white;
+      font-family: sans-serif;
+    }
+    canvas {
+      background: #111;
+      display: block;
+      margin: 0 auto;
+    }
+    #status {
+      margin-top: 5px;
+    }
+    button {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 15px 30px;
+      font-size: 20px;
+      border: none;
+      border-radius: 10px;
+      background-color: #4caf50;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="status">Drücke zum Landen</div>
+  <canvas id="game" width="300" height="500"></canvas>
+  <button id="thrustBtn">⬆️</button>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    let rocket = {
+      x: 150,
+      y: 100,
+      vy: 0,
+      fuel: 100,
+      thrust: -0.3,
+      gravity: 0.05,
+      landed: false,
+      crashed: false,
+    };
+
+    const platform = { x: 100, y: 450, width: 100, height: 10 };
+    let thrusting = false;
+
+    document.getElementById("thrustBtn").addEventListener("touchstart", () => thrusting = true);
+    document.getElementById("thrustBtn").addEventListener("touchend", () => thrusting = false);
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Plattform
+      ctx.fillStyle = "green";
+      ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+
+      // Rakete
+      ctx.fillStyle = "white";
+      ctx.fillRect(rocket.x - 10, rocket.y - 20, 20, 40);
+
+      // Flamme
+      if (thrusting && rocket.fuel > 0 && !rocket.landed && !rocket.crashed) {
+        ctx.fillStyle = "orange";
+        ctx.beginPath();
+        ctx.moveTo(rocket.x - 10, rocket.y + 20);
+        ctx.lineTo(rocket.x, rocket.y + 40 + Math.random() * 10);
+        ctx.lineTo(rocket.x + 10, rocket.y + 20);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = "white";
+      ctx.fillText("Fuel: " + rocket.fuel.toFixed(0), 10, 20);
+    }
+
+    function update() {
+      if (rocket.landed || rocket.crashed) return;
+
+      if (thrusting && rocket.fuel > 0) {
+        rocket.vy += rocket.thrust;
+        rocket.fuel -= 0.5;
+      }
+
+      rocket.vy += rocket.gravity;
+      rocket.y += rocket.vy;
+
+      if (
+        rocket.y + 20 >= platform.y &&
+        rocket.x > platform.x &&
+        rocket.x < platform.x + platform.width
+      ) {
+        if (rocket.vy < 1.5) {
+          rocket.landed = true;
+          document.getElementById("status").textContent = "✅ Erfolgreich gelandet!";
+        } else {
+          rocket.crashed = true;
+          document.getElementById("status").textContent = "💥 Gekracht!";
+        }
+        rocket.vy = 0;
+      }
+
+      if (rocket.y + 20 >= canvas.height) {
+        rocket.crashed = true;
+        document.getElementById("status").textContent = "💥 Gekracht!";
+      }
+    }
+
+    function loop() {
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    loop();
+  </script>
+</body>
+</html>
