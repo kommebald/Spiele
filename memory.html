@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Memory Spiel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #2c3e50, #4ca1af);
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 32px;
+    }
+
+    .spielbrett {
+      display: grid;
+      grid-template-columns: repeat(4, 80px);
+      gap: 15px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .karte {
+      width: 80px;
+      height: 80px;
+      background-color: #ecf0f1;
+      color: #2c3e50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      border-radius: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .karte.aufgedeckt {
+      background-color: white;
+    }
+
+    #status {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+
+    .back-button {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      padding: 10px 20px;
+      background-color: #888;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧠 Memory Spiel</h1>
+  <div class="spielbrett" id="spielbrett"></div>
+  <p id="status"></p>
+  <button class="back-button" onclick="window.location.href='index.html'">⬅ Zurück</button>
+
+  <script>
+    const emojis = ['🍎','🍌','🍒','🍇','🍓','🍍','🥝','🥑'];
+    let gemischt = [...emojis, ...emojis].sort(() => 0.5 - Math.random());
+    let erstes = null;
+    let sperren = false;
+    let gefundenePaare = 0;
+
+    const brett = document.getElementById('spielbrett');
+    const status = document.getElementById('status');
+
+    gemischt.forEach((emoji, index) => {
+      const karte = document.createElement('div');
+      karte.classList.add('karte');
+      karte.dataset.emoji = emoji;
+      karte.dataset.index = index;
+      karte.addEventListener('click', () => aufdecken(karte));
+      brett.appendChild(karte);
+    });
+
+    function aufdecken(karte) {
+      if (sperren || karte.classList.contains('aufgedeckt')) return;
+      karte.textContent = karte.dataset.emoji;
+      karte.classList.add('aufgedeckt');
+
+      if (!erstes) {
+        erstes = karte;
+      } else {
+        sperren = true;
+        if (erstes.dataset.emoji === karte.dataset.emoji) {
+          gefundenePaare++;
+          erstes = null;
+          sperren = false;
+          if (gefundenePaare === emojis.length) {
+            status.textContent = "🎉 Du hast alle Paare gefunden!";
+          }
+        } else {
+          setTimeout(() => {
+            erstes.textContent = '';
+            karte.textContent = '';
+            erstes.classList.remove('aufgedeckt');
+            karte.classList.remove('aufgedeckt');
+            erstes = null;
+            sperren = false;
+          }, 1000);
+        }
+      }
+    }
+  </script>
+</body>
+</html>
