@@ -90,6 +90,7 @@
 
   <label for="einsatz">Einsatz:</label>
   <input type="number" id="einsatz" min="1" value="10" />
+  <button onclick="neustart()">Setzen & Start</button>
 
   <div class="info" id="message">Spiel starten!</div>
 
@@ -106,18 +107,18 @@
   <div>
     <button onclick="hit()">Hit</button>
     <button onclick="stand()">Stand</button>
-    <button onclick="neustart()">Neustart</button>
+  </div>
+
+  <div>
+    <button onclick="window.location.href='blackjack_online.html'">🧑‍🤝‍🧑 Online Modus</button>
   </div>
 
   <button id="fullreset" onclick="resetGame()">Full Reset</button>
   <button id="zurueck" onclick="window.location.href='webseite.html'">Zurück</button>
 
   <script>
-    // Theme synchronisieren
     const theme = localStorage.getItem("theme");
-    if (theme === "light") {
-      document.body.classList.add("light");
-    }
+    if (theme === "light") document.body.classList.add("light");
 
     let deck, playerCards, dealerCards, playerTotal, dealerTotal;
     let chips = parseInt(localStorage.getItem("chips") || "100");
@@ -205,9 +206,7 @@
       showCards(playerCards, "player-cards");
       document.getElementById("player-total").textContent = playerTotal;
 
-      if (playerTotal > 21) {
-        beendeSpiel("Verloren");
-      }
+      if (playerTotal > 21) beendeSpiel("Verloren");
     }
 
     function stand() {
@@ -221,13 +220,9 @@
       showCards(dealerCards, "dealer-cards");
       document.getElementById("dealer-total").textContent = dealerTotal;
 
-      if (dealerTotal > 21 || playerTotal > dealerTotal) {
-        beendeSpiel("Gewonnen");
-      } else if (playerTotal < dealerTotal) {
-        beendeSpiel("Verloren");
-      } else {
-        beendeSpiel("Unentschieden");
-      }
+      if (dealerTotal > 21 || playerTotal > dealerTotal) beendeSpiel("Gewonnen");
+      else if (playerTotal < dealerTotal) beendeSpiel("Verloren");
+      else beendeSpiel("Unentschieden");
     }
 
     function beendeSpiel(ergebnis) {
