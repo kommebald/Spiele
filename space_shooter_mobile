@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space Shooter Mobile</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: black;
+      font-family: sans-serif;
+      touch-action: none;
+    }
+    canvas {
+      display: block;
+    }
+    #controls {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      z-index: 10;
+    }
+    .btn {
+      background: #444;
+      color: white;
+      padding: 16px 24px;
+      font-size: 20px;
+      border: none;
+      border-radius: 10px;
+      user-select: none;
+    }
+    #zurueck {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #444;
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      font-size: 14px;
+      border-radius: 6px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="controls">
+  <button class="btn" id="leftBtn">⬅</button>
+  <button class="btn" id="shootBtn">🔥</button>
+  <button class="btn" id="rightBtn">➡</button>
+</div>
+
+<button id="zurueck" onclick="window.location.href='webseite.html'">Zurück</button>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let ship = { x: canvas.width / 2, y: canvas.height - 80, size: 30 };
+let bullets = [];
+let enemies = [];
+let score = 0;
+let left = false;
+let right = false;
+
+function drawShip() {
+  ctx.fillStyle = "white";
+  ctx.beginPath();
+  ctx.moveTo(ship.x, ship.y);
+  ctx.lineTo(ship.x - ship.size / 2, ship.y + ship.size);
+  ctx.lineTo(ship.x + ship.size / 2, ship.y + ship.size);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawBullets() {
+  ctx.fillStyle = "red";
+  bullets.forEach(b => ctx.fillRect(b.x - 2, b.y, 4, 10));
+}
+
+function drawEnemies() {
+  ctx.fillStyle = "lime";
+  enemies.forEach(e => ctx.fillRect(e.x, e.y, 20, 20));
+}
+
+function update() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (left) ship.x -= 6;
+  if (right) ship.x += 6;
+  ship.x = Math.max(ship.size / 2, Math.min(canvas.width - ship.size / 2, ship.x));
+
+  drawShip();
+  drawBullets();
+  drawEnemies();
+
+  bullets.forEach(b => b.y -= 7);
+  bullets = bullets.filter(b => b.y > 0);
+
+  enemies.forEach(e => e.y += 3);
+  enemies = enemies.filter(e => e.y < canvas.height);
+
+  for (let i = enemies.length - 1; i >= 0; i--) {
+    for (let j = bullets.length - 1; j >= 0; j--) {
+      if (
+        bullets[j].x > enemies[i].x &&
+        bullets[j].x < enemies[i].x + 20 &&
+        bullets[j].y > enemies[i].y &&
+        bullets[j].y < enemies[i].y + 20
+      ) {
+        enemies.splice(i, 1);
+        bullets.splice(j, 1);
+        score++;
+        break;
+      }
+    }
+  }
+
+  ctx.fillStyle = "white";
+  ctx.font = "18px sans-serif";
+  ctx.fillText("Score: " + score, 10, 30);
+  requestAnimationFrame(update);
+}
+
+function spawnEnemy() {
+  enemies.push({ x: Math.random() * (canvas.width - 20), y: -20 });
+}
+
+setInterval(spawnEnemy, 1000);
+
+// Touch Controls
+const leftBtn = document.getElementById("leftBtn");
+const rightBtn = document.getElementById("rightBtn");
+const shootBtn = document.getElementById("shootBtn");
+
+leftBtn.addEventListener("touchstart", () => left = true);
+leftBtn.addEventListener("touchend", () => left = false);
+rightBtn.addEventListener("touchstart", () => right = true);
+rightBtn.addEventListener("touchend", () => right = false);
+shootBtn.addEventListener("touchstart", () => {
+  bullets.push({ x: ship.x, y: ship.y });
+});
+
+update();
+</script>
+</body>
+</html>
