@@ -2,186 +2,259 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Blackjack</title>
   <style>
     :root {
-      --bg-color: #ffffff;
-      --text-color: #000000;
-      --card-bg: #f0f0f0;
-      --button-bg: #007bff;
+      --bg: #1e1e2f;
+      --text: white;
+      --card: #2e2e3f;
+      --btn: #5865F2;
+      --btn-hover: #4752c4;
     }
-
-    [data-theme="dark"] {
-      --bg-color: #121212;
-      --text-color: #ffffff;
-      --card-bg: #1e1e1e;
-      --button-bg: #3399ff;
+    body.light {
+      --bg: #f5f5f5;
+      --text: #111;
+      --card: #fff;
+      --btn: #0078d7;
+      --btn-hover: #005a9e;
     }
 
     body {
-      margin: 0;
-      background-color: var(--bg-color);
-      color: var(--text-color);
+      background-color: var(--bg);
+      color: var(--text);
       font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
+      text-align: center;
+      padding: 20px;
+      transition: background-color 0.3s, color 0.3s;
     }
 
-    .header {
+    .cards {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .card {
+      background-color: var(--card);
+      padding: 15px;
+      border-radius: 8px;
+      width: 50px;
+      height: 70px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      font-size: 1.2em;
+      display: flex;
+      justify-content: center;
       align-items: center;
-      padding: 1rem;
-      background-color: var(--card-bg);
     }
 
-    .btn {
-      background-color: var(--button-bg);
+    button {
+      background-color: var(--btn);
       color: white;
       border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
+      padding: 10px 20px;
+      margin: 10px;
+      border-radius: 6px;
       cursor: pointer;
+      font-size: 1em;
     }
 
-    .game-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
+    button:hover {
+      background-color: var(--btn-hover);
     }
 
-    .footer {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.5rem 1rem;
-      font-size: 0.9rem;
-      background-color: var(--card-bg);
+    .info {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    #zurueck {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+    }
+
+    #fullreset {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <button class="btn" onclick="goBack()">⬅ Zurück</button>
-    <button class="btn" onclick="toggleTheme()">🌓</button>
+
+  <h1>🃏 Blackjack</h1>
+
+  <p>Chips: <span id="chips">100</span></p>
+
+  <label for="einsatz">Einsatz:</label>
+  <input type="number" id="einsatz" min="1" value="10" />
+
+  <div class="info" id="message">Spiel starten!</div>
+
+  <div>
+    <h2>Deine Karten (<span id="player-total">0</span>):</h2>
+    <div class="cards" id="player-cards"></div>
   </div>
 
-  <div class="game-container">
-    <h2>Blackjack</h2>
-    <p>Wähle deinen Modus:</p>
-    <div style="margin-bottom: 1rem;">
-      <button class="btn" onclick="startBotGame()">🤖 Gegen Bot</button>
-      <button class="btn" onclick="startOnlineGame()">🌐 Online Multiplayer</button>
-    </div>
-    <div id="gameArea"></div>
+  <div>
+    <h2>Dealer Karten (<span id="dealer-total">0</span>):</h2>
+    <div class="cards" id="dealer-cards"></div>
   </div>
 
-  <div class="footer">
-    <div>Made by kommebald</div>
-    <div id="statusInfo">Eingeloggt als ... | <span id="clock"></span></div>
+  <div>
+    <button onclick="hit()">Hit</button>
+    <button onclick="stand()">Stand</button>
+    <button onclick="neustart()">Neustart</button>
   </div>
+
+  <button id="fullreset" onclick="resetGame()">Full Reset</button>
+  <button id="zurueck" onclick="window.location.href='webseite.html'">Zurück</button>
 
   <script>
-    const user = localStorage.getItem("loggedInUser") || "Unbekannt";
-    const theme = localStorage.getItem("theme") || "light";
-    document.documentElement.setAttribute("data-theme", theme);
-
-    function toggleTheme() {
-      const newTheme = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
-      document.documentElement.setAttribute("data-theme", newTheme);
-      localStorage.setItem("theme", newTheme);
+    // Theme synchronisieren
+    const theme = localStorage.getItem("theme");
+    if (theme === "light") {
+      document.body.classList.add("light");
     }
 
-    function goBack() {
-      window.location.href = "webseite.html";
+    let deck, playerCards, dealerCards, playerTotal, dealerTotal;
+    let chips = parseInt(localStorage.getItem("chips") || "100");
+    let spielGestartet = false;
+
+    function updateChips() {
+      document.getElementById("chips").textContent = chips;
+      localStorage.setItem("chips", chips);
     }
 
-    function startBotGame() {
-      const game = document.getElementById("gameArea");
-      game.innerHTML = `
-        <div><strong>Spieler:</strong> <span id="playerHand"></span></div>
-        <div><strong>Dealer:</strong> <span id="dealerHand"></span></div>
-        <div style="margin-top: 1rem;">
-          <button class="btn" onclick="hit()">Karte</button>
-          <button class="btn" onclick="stand()">Passen</button>
-          <button class="btn" onclick="restart()">Neustart</button>
-        </div>
-        <p id="botStatus">Spiel gestartet...</p>
-      `;
-      restart();
+    function getCardValue(card) {
+      if (["J", "Q", "K"].includes(card)) return 10;
+      if (card === "A") return 11;
+      return parseInt(card);
     }
 
-    function startOnlineGame() {
-      const game = document.getElementById("gameArea");
-      game.innerHTML = `<p>Online-Multiplayer-Modus in Entwicklung... Benutzer: ${user}</p>`;
+    function berechneTotal(cards) {
+      let sum = 0;
+      let aces = 0;
+      for (let c of cards) {
+        let v = getCardValue(c);
+        sum += v;
+        if (c === "A") aces++;
+      }
+      while (sum > 21 && aces > 0) {
+        sum -= 10;
+        aces--;
+      }
+      return sum;
     }
 
-    let playerHand = [];
-    let dealerHand = [];
-
-    function drawCard() {
-      return Math.floor(Math.random() * 10) + 2;
+    function generateDeck() {
+      const values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+      let d = [];
+      for (let v of values) {
+        for (let i = 0; i < 4; i++) {
+          d.push(v);
+        }
+      }
+      return d.sort(() => Math.random() - 0.5);
     }
 
-    function handValue(hand) {
-      return hand.reduce((a, b) => a + b, 0);
+    function showCards(cards, targetId) {
+      const container = document.getElementById(targetId);
+      container.innerHTML = "";
+      for (let card of cards) {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.textContent = card;
+        container.appendChild(div);
+      }
     }
 
-    function updateHands() {
-      document.getElementById("playerHand").textContent = playerHand.join(", ") + " (" + handValue(playerHand) + ")";
-      document.getElementById("dealerHand").textContent = dealerHand.join(", ") + " (" + handValue(dealerHand) + ")";
+    function neustart() {
+      if (spielGestartet) return;
+
+      const einsatz = parseInt(document.getElementById("einsatz").value);
+      if (isNaN(einsatz) || einsatz <= 0 || einsatz > chips) {
+        alert("Ungültiger Einsatz!");
+        return;
+      }
+
+      spielGestartet = true;
+      deck = generateDeck();
+      playerCards = [deck.pop(), deck.pop()];
+      dealerCards = [deck.pop(), deck.pop()];
+
+      playerTotal = berechneTotal(playerCards);
+      dealerTotal = berechneTotal(dealerCards);
+
+      showCards(playerCards, "player-cards");
+      showCards(dealerCards, "dealer-cards");
+
+      document.getElementById("player-total").textContent = playerTotal;
+      document.getElementById("dealer-total").textContent = dealerTotal;
+
+      document.getElementById("message").textContent = "Du bist dran!";
     }
 
     function hit() {
-      playerHand.push(drawCard());
-      updateHands();
-      if (handValue(playerHand) > 21) {
-        document.getElementById("botStatus").textContent = "Du hast verloren!";
-        disableBotButtons();
+      if (!spielGestartet) return;
+
+      playerCards.push(deck.pop());
+      playerTotal = berechneTotal(playerCards);
+      showCards(playerCards, "player-cards");
+      document.getElementById("player-total").textContent = playerTotal;
+
+      if (playerTotal > 21) {
+        beendeSpiel("Verloren");
       }
     }
 
     function stand() {
-      while (handValue(dealerHand) < 17) {
-        dealerHand.push(drawCard());
+      if (!spielGestartet) return;
+
+      while (dealerTotal < 17) {
+        dealerCards.push(deck.pop());
+        dealerTotal = berechneTotal(dealerCards);
       }
-      updateHands();
 
-      const p = handValue(playerHand);
-      const d = handValue(dealerHand);
-      const result = d > 21 || p > d ? "Du hast gewonnen!" : d > p ? "Dealer gewinnt!" : "Unentschieden!";
-      document.getElementById("botStatus").textContent = result;
-      disableBotButtons();
+      showCards(dealerCards, "dealer-cards");
+      document.getElementById("dealer-total").textContent = dealerTotal;
+
+      if (dealerTotal > 21 || playerTotal > dealerTotal) {
+        beendeSpiel("Gewonnen");
+      } else if (playerTotal < dealerTotal) {
+        beendeSpiel("Verloren");
+      } else {
+        beendeSpiel("Unentschieden");
+      }
     }
 
-    function restart() {
-      playerHand = [drawCard(), drawCard()];
-      dealerHand = [drawCard()];
-      updateHands();
-      document.getElementById("botStatus").textContent = "Spiel gestartet...";
-      enableBotButtons();
+    function beendeSpiel(ergebnis) {
+      const einsatz = parseInt(document.getElementById("einsatz").value);
+
+      if (ergebnis === "Gewonnen") {
+        chips += einsatz;
+        document.getElementById("message").textContent = "🎉 Du hast gewonnen!";
+      } else if (ergebnis === "Verloren") {
+        chips -= einsatz;
+        document.getElementById("message").textContent = "💥 Du hast verloren!";
+      } else {
+        document.getElementById("message").textContent = "🤝 Unentschieden!";
+      }
+
+      updateChips();
+      spielGestartet = false;
     }
 
-    function disableBotButtons() {
-      document.querySelectorAll("#gameArea button").forEach(btn => btn.disabled = true);
+    function resetGame() {
+      if (confirm("Möchtest du alles zurücksetzen?")) {
+        chips = 100;
+        updateChips();
+      }
     }
 
-    function enableBotButtons() {
-      document.querySelectorAll("#gameArea button").forEach(btn => btn.disabled = false);
-    }
-
-    function updateClock() {
-      const now = new Date();
-      document.getElementById("clock").textContent = now.toLocaleTimeString();
-    }
-
-    document.getElementById("statusInfo").textContent = `Eingeloggt als ${user} | `;
-    updateClock();
-    setInterval(updateClock, 1000);
+    updateChips();
   </script>
 </body>
 </html>
