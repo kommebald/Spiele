@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🐍 Snake Mobile</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    canvas {
+      background-color: #222;
+      border: 2px solid #444;
+      touch-action: none;
+    }
+
+    .controls {
+      margin-top: 15px;
+      display: grid;
+      grid-template-columns: 60px 60px 60px;
+      grid-template-rows: 60px 60px;
+      gap: 10px;
+    }
+
+    .btn {
+      background: #333;
+      color: white;
+      font-size: 20px;
+      border: none;
+      border-radius: 10px;
+    }
+
+    .btn:active {
+      background: #555;
+    }
+
+    h1 {
+      margin-top: 10px;
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🐍 Snake</h1>
+  <canvas id="game" width="300" height="300"></canvas>
+
+  <div class="controls">
+    <div></div>
+    <button class="btn" onclick="direction = 'up'">⬆️</button>
+    <div></div>
+    <button class="btn" onclick="direction = 'left'">⬅️</button>
+    <button class="btn" onclick="direction = 'down'">⬇️</button>
+    <button class="btn" onclick="direction = 'right'">➡️</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const gridSize = 20;
+    let snake = [{ x: 5, y: 5 }];
+    let apple = { x: 10, y: 10 };
+    let direction = "right";
+    let gameOver = false;
+
+    function drawBlock(x, y, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x * gridSize, y * gridSize, gridSize - 2, gridSize - 2);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      snake.forEach((segment, index) => {
+        drawBlock(segment.x, segment.y, index === 0 ? "#0f0" : "#4f4");
+      });
+
+      drawBlock(apple.x, apple.y, "#f00");
+    }
+
+    function move() {
+      if (gameOver) return;
+
+      const head = { ...snake[0] };
+      if (direction === "right") head.x++;
+      if (direction === "left") head.x--;
+      if (direction === "up") head.y--;
+      if (direction === "down") head.y++;
+
+      // Kollision
+      if (
+        head.x < 0 || head.x >= canvas.width / gridSize ||
+        head.y < 0 || head.y >= canvas.height / gridSize ||
+        snake.some(segment => segment.x === head.x && segment.y === head.y)
+      ) {
+        alert("💀 Game Over!");
+        reset();
+        return;
+      }
+
+      snake.unshift(head);
+
+      if (head.x === apple.x && head.y === apple.y) {
+        placeApple();
+      } else {
+        snake.pop();
+      }
+
+      draw();
+    }
+
+    function placeApple() {
+      apple.x = Math.floor(Math.random() * (canvas.width / gridSize));
+      apple.y = Math.floor(Math.random() * (canvas.height / gridSize));
+    }
+
+    function reset() {
+      snake = [{ x: 5, y: 5 }];
+      direction = "right";
+      placeApple();
+      gameOver = false;
+    }
+
+    setInterval(move, 150);
+    draw();
+  </script>
+</body>
+</html>
