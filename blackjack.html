@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blackjack</title>
+  <style>
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #000000;
+      --card-bg: #f0f0f0;
+      --button-bg: #007bff;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #121212;
+      --text-color: #ffffff;
+      --card-bg: #1e1e1e;
+      --button-bg: #3399ff;
+    }
+
+    body {
+      margin: 0;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background-color: var(--card-bg);
+    }
+
+    .btn {
+      background-color: var(--button-bg);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .game-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+      background-color: var(--card-bg);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <button class="btn" onclick="goBack()">⬅ Zurück</button>
+    <button class="btn" onclick="toggleTheme()">🌓</button>
+  </div>
+
+  <div class="game-container">
+    <h2>Blackjack</h2>
+    <p>Wähle deinen Modus:</p>
+    <div style="margin-bottom: 1rem;">
+      <button class="btn" onclick="startBotGame()">🤖 Gegen Bot</button>
+      <button class="btn" onclick="startOnlineGame()">🌐 Online Multiplayer</button>
+    </div>
+    <div id="gameArea"></div>
+  </div>
+
+  <div class="footer">
+    <div>Made by kommebald</div>
+    <div id="statusInfo">Eingeloggt als ... | <span id="clock"></span></div>
+  </div>
+
+  <script>
+    const user = localStorage.getItem("loggedInUser") || "Unbekannt";
+    const theme = localStorage.getItem("theme") || "light";
+    document.documentElement.setAttribute("data-theme", theme);
+
+    function toggleTheme() {
+      const newTheme = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", newTheme);
+      localStorage.setItem("theme", newTheme);
+    }
+
+    function goBack() {
+      window.location.href = "webseite.html";
+    }
+
+    function startBotGame() {
+      const game = document.getElementById("gameArea");
+      game.innerHTML = `
+        <div><strong>Spieler:</strong> <span id="playerHand"></span></div>
+        <div><strong>Dealer:</strong> <span id="dealerHand"></span></div>
+        <div style="margin-top: 1rem;">
+          <button class="btn" onclick="hit()">Karte</button>
+          <button class="btn" onclick="stand()">Passen</button>
+          <button class="btn" onclick="restart()">Neustart</button>
+        </div>
+        <p id="botStatus">Spiel gestartet...</p>
+      `;
+      restart();
+    }
+
+    function startOnlineGame() {
+      const game = document.getElementById("gameArea");
+      game.innerHTML = `<p>Online-Multiplayer-Modus in Entwicklung... Benutzer: ${user}</p>`;
+    }
+
+    let playerHand = [];
+    let dealerHand = [];
+
+    function drawCard() {
+      return Math.floor(Math.random() * 10) + 2;
+    }
+
+    function handValue(hand) {
+      return hand.reduce((a, b) => a + b, 0);
+    }
+
+    function updateHands() {
+      document.getElementById("playerHand").textContent = playerHand.join(", ") + " (" + handValue(playerHand) + ")";
+      document.getElementById("dealerHand").textContent = dealerHand.join(", ") + " (" + handValue(dealerHand) + ")";
+    }
+
+    function hit() {
+      playerHand.push(drawCard());
+      updateHands();
+      if (handValue(playerHand) > 21) {
+        document.getElementById("botStatus").textContent = "Du hast verloren!";
+        disableBotButtons();
+      }
+    }
+
+    function stand() {
+      while (handValue(dealerHand) < 17) {
+        dealerHand.push(drawCard());
+      }
+      updateHands();
+
+      const p = handValue(playerHand);
+      const d = handValue(dealerHand);
+      const result = d > 21 || p > d ? "Du hast gewonnen!" : d > p ? "Dealer gewinnt!" : "Unentschieden!";
+      document.getElementById("botStatus").textContent = result;
+      disableBotButtons();
+    }
+
+    function restart() {
+      playerHand = [drawCard(), drawCard()];
+      dealerHand = [drawCard()];
+      updateHands();
+      document.getElementById("botStatus").textContent = "Spiel gestartet...";
+      enableBotButtons();
+    }
+
+    function disableBotButtons() {
+      document.querySelectorAll("#gameArea button").forEach(btn => btn.disabled = true);
+    }
+
+    function enableBotButtons() {
+      document.querySelectorAll("#gameArea button").forEach(btn => btn.disabled = false);
+    }
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById("clock").textContent = now.toLocaleTimeString();
+    }
+
+    document.getElementById("statusInfo").textContent = `Eingeloggt als ${user} | `;
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>
