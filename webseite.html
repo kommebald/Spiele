@@ -9,12 +9,14 @@
       --bg-color: #ffffff;
       --text-color: #000000;
       --footer-color: #f0f0f0;
+      --card-bg: #007bff;
     }
 
     [data-theme="dark"] {
-      --bg-color: #121212;
+      --bg-color: #1e1e2f;
       --text-color: #ffffff;
-      --footer-color: #1e1e1e;
+      --footer-color: #121222;
+      --card-bg: #007bff;
     }
 
     body {
@@ -46,11 +48,38 @@
 
     .content {
       flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      padding: 2rem;
+      justify-items: center;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      color: white;
+      border-radius: 12px;
       text-align: center;
+      padding: 1.5rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+      width: 150px;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+    }
+
+    .card a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .card span {
+      font-size: 2rem;
+      display: block;
+      margin-bottom: 0.5rem;
     }
 
     .footer {
@@ -65,7 +94,12 @@
 
     @media (max-width: 600px) {
       .content {
-        font-size: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        padding: 1rem;
+      }
+
+      .card {
+        width: 120px;
         padding: 1rem;
       }
 
@@ -82,19 +116,22 @@
   </div>
 
   <div class="content">
-    Willkommen auf der Hauptseite!
+    <!-- Beispiel Icons – du kannst sie frei ändern -->
+    <div class="card"><a href="blackjack.html"><span>🃏</span>Blackjack</a></div>
+    <div class="card"><a href="memory.html"><span>🧠</span>Memory</a></div>
+    <div class="card"><a href="minesweeper.html"><span>💣</span>Minesweeper</a></div>
+    <div class="card"><a href="rocket.html"><span>🚀</span>Rocket</a></div>
+    <div class="card"><a href="snake.html"><span>🐍</span>Snake</a></div>
+    <div class="card"><a href="space_shooter.html"><span>👾</span>Space Shooter</a></div>
+    <div class="card"><a href="breakout.html"><span>🔨</span>Breakout</a></div>
+    <div class="card"><a href="guess-the-number.html"><span>🔢</span>Guess</a></div>
+    <div class="card"><a href="klick-den-punkt.html"><span>🎯</span>Klick</a></div>
   </div>
 
   <div class="footer">
     <div>Made by kommebald</div>
     <div id="userInfo">Lädt...</div>
   </div>
-
-  <div class="spiel-kachel">
-    <h3>Blackjack</h3>
-    <a href="blackjack.html" class="btn">Spielen</a>
-  </div>
-
 
   <script>
     // ✅ Login-Prüfung
@@ -103,7 +140,7 @@
       window.location.href = "index.html";
     }
 
-    // ✅ Dark/Light Theme laden
+    // ✅ Theme laden
     const currentTheme = localStorage.getItem("theme") || "light";
     document.documentElement.setAttribute("data-theme", currentTheme);
 
