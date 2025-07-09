@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Drive Mad</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    canvas {
+      background: #222;
+      display: block;
+      margin: 20px auto;
+      border: 3px solid white;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 5px;
+      background: #5865F2;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #4752c4;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚗 Drive Mad</h1>
+  <canvas id="gameCanvas" width="320" height="200"></canvas>
+  <br>
+  <button onclick="resetGame()">🔄 Neustart</button>
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let car = { x: 40, y: 160, width: 20, height: 10, speed: 2, gravity: 0.2, dy: 0 };
+    let obstacles = [{ x: 100, y: 170, width: 20, height: 30 }, { x: 180, y: 150, width: 40, height: 50 }];
+    let gameRunning = true;
+
+    function drawCar() {
+      ctx.fillStyle = "yellow";
+      ctx.fillRect(car.x, car.y, car.width, car.height);
+    }
+
+    function drawObstacles() {
+      ctx.fillStyle = "red";
+      for (let obs of obstacles) {
+        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+      }
+    }
+
+    function update() {
+      if (!gameRunning) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      car.dy += car.gravity;
+      car.y += car.dy;
+
+      car.x += car.speed;
+
+      for (let obs of obstacles) {
+        if (
+          car.x < obs.x + obs.width &&
+          car.x + car.width > obs.x &&
+          car.y < obs.y + obs.height &&
+          car.y + car.height > obs.y
+        ) {
+          gameRunning = false;
+          alert("💥 Unfall! Versuch's nochmal.");
+        }
+      }
+
+      if (car.y + car.height > canvas.height) {
+        car.y = canvas.height - car.height;
+        car.dy = 0;
+      }
+
+      drawCar();
+      drawObstacles();
+      requestAnimationFrame(update);
+    }
+
+    function resetGame() {
+      car.x = 40;
+      car.y = 160;
+      car.dy = 0;
+      gameRunning = true;
+      update();
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.code === "Space" && gameRunning) {
+        car.dy = -4;
+      }
+    });
+
+    update();
+  </script>
+</body>
+</html>
